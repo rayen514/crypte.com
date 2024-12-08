@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryptage Complexe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #121212;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #1f1f1f;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      resize: none;
+      font-size: 1rem;
+      font-family: "Courier New", Courier, monospace;
+      background: #000;
+      color: #0f0;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #ff5722;
+      color: white;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #ff7043;
+    }
+
+    .output, .library {
+      background: #222;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: "Courier New", Courier, monospace;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    .library-item {
+      border-bottom: 1px solid #444;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .library-item:last-child {
+      border-bottom: none;
+    }
+
+    .remove-btn {
+      padding: 5px 10px;
+      background-color: #d32f2f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .remove-btn:hover {
+      background-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cryptage Complexe</h1>
+    <p>Écrivez votre texte ci-dessous. Il sera crypté de manière très difficile et sauvegardé :</p>
+    <textarea id="inputText" placeholder="Entrez votre texte ici..."></textarea>
+    <button onclick="encryptText()">Crypter</button>
+    <button onclick="copyToClipboard()">Copier le texte crypté</button>
+    <div id="output" class="output"></div>
+    <h2>Bibliothèque des Textes</h2>
+    <div id="library" class="library"></div>
+  </div>
+
+  <script>
+    const greekLetters = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ', 'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
+    const mathSymbols = ['∑', '∏', '√', '∫', '∂', '∞', '∇', '⊕', '⊗', '⊖', '⊘', '∴', '⊂', '⊃'];
+    const obscureSymbols = ['⋆', '⋈', '⋄', '∭', '⨉', '⨁', '⊡', '⧫', '⦿', '⨌', '◉', '⩕'];
+    const superscripts = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'];
+
+    // Charger la bibliothèque depuis le localStorage
+    function loadLibrary() {
+      const library = JSON.parse(localStorage.getItem('textLibrary')) || [];
+      const libraryDiv = document.getElementById('library');
+      libraryDiv.innerHTML = '';
+
+      if (library.length === 0) {
+        libraryDiv.innerHTML = '<p>Aucun texte sauvegardé pour le moment.</p>';
+        return;
+      }
+
+      library.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.classList.add('library-item');
+        div.innerHTML = `
+          <div>
+            <strong>Texte Original :</strong> ${item.original}<br>
+            <strong>Texte Crypté :</strong> ${item.encrypted}
+          </div>
+          <button class="remove-btn" onclick="removeFromLibrary(${index})">Supprimer</button>
+        `;
+        libraryDiv.appendChild(div);
+      });
+    }
+
+    // Enregistrer un texte dans la bibliothèque
+    function saveToLibrary(original, encrypted) {
+      const library = JSON.parse(localStorage.getItem('textLibrary')) || [];
+      library.push({ original, encrypted });
+      localStorage.setItem('textLibrary', JSON.stringify(library));
+      loadLibrary();
+    }
+
+    // Supprimer un texte de la bibliothèque
+    function removeFromLibrary(index) {
+      const library = JSON.parse(localStorage.getItem('textLibrary')) || [];
+      library.splice(index, 1);
+      localStorage.setItem('textLibrary', JSON.stringify(library));
+      loadLibrary();
+    }
+
+    function encryptText() {
+      const inputText = document.getElementById('inputText').value.trim();
+      if (!inputText) {
+        alert('Veuillez entrer du texte à crypter.');
+        return;
+      }
+
+      let encryptedText = '';
+      for (let char of inputText) {
+        if (/[a-zA-Z]/.test(char)) {
+          const random = Math.random();
+          if (random > 0.5) {
+            encryptedText += greekLetters[char.toLowerCase().charCodeAt(0) % greekLetters.length];
+          } else {
+            encryptedText += mathSymbols[char.toLowerCase().charCodeAt(0) % mathSymbols.length];
+          }
+        } else if (/\d/.test(char)) {
+          encryptedText += superscripts[parseInt(char)];
+        } else {
+          encryptedText += obscureSymbols[Math.floor(Math.random() * obscureSymbols.length)];
+        }
+      }
+
+      document.getElementById('output').textContent = encryptedText;
+      saveToLibrary(inputText, encryptedText);
+    }
+
+    function copyToClipboard() {
+      const outputText = document.getElementById('output').textContent;
+      if (!outputText.trim()) {
+        alert('Aucun texte crypté à copier.');
+        return;
+      }
+
+      navigator.clipboard.writeText(outputText).then(() => {
+        alert('Texte crypté copié dans le presse-papier !');
+      }).catch(err => {
+        alert('Erreur lors de la copie du texte : ' + err);
+      });
+    }
+
+    // Charger la bibliothèque au démarrage
+    loadLibrary();
+  </script>
+</body>
+</html>
